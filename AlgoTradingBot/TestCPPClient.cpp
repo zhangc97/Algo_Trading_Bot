@@ -24,6 +24,7 @@
 #include "CommonDefs.h"
 #include "Utils.h"
 #include "ContractSamples.h"
+#include "gnuplot-iostream.h"
 
 #include <stdio.h>
 #include <chrono>
@@ -32,6 +33,7 @@
 #include <ctime>
 #include <fstream>
 #include <cstdint>
+#include <vector>
 
 
 const int PING_DEADLINE = 2; //seconds
@@ -112,6 +114,9 @@ void TestCppClient::processMessages()
 			break;
 		case ST_HISTORICALDATAREQUESTS_ACK:
 			break;
+		case ST_INITIALTEST:
+			testCSV();
+			break;
 		case ST_PING_ACK:
 			if (m_sleepDeadline < now) {
 				disconnect();
@@ -135,7 +140,8 @@ void TestCppClient::nextValidId(OrderId orderId)
 	m_orderId = orderId;
 	//! [nextvalidid]
 	//m_state = ST_PING;
-	m_state = ST_HISTORICALDATAREQUEST;
+	//m_state = ST_HISTORICALDATAREQUEST;
+	m_state = ST_INITIALTEST;
 }
 void TestCppClient::connectAck() {
 	if (!m_extraAuth && m_pClient->asyncEConnect())
@@ -182,6 +188,82 @@ void TestCppClient::historicalDataRequests(const Contract &data)
 	m_pClient->cancelHistoricalData(4001);
 	m_state = ST_HISTORICALDATAREQUESTS_ACK;
 }
+time_t convert_to_tm(char date_array[])
+{
+	char* date = date_array;
+	tm converted_time;
+	tm *ltm = &converted_time;
+	char* pch;
+	pch = strtok(date, " ,.-:");
+	ltm->tm_year = std::stoi(pch) - 1900; //year value
+	ltm->tm_mon = std::stoi(strtok(NULL, " ,.-:")) - 1; //month	
+	ltm->tm_mday = std::stoi(strtok(NULL, " ,.-:"));
+	ltm->tm_hour = std::stoi(strtok(NULL, " ,.-:"));
+	ltm->tm_min = std::stoi(strtok(NULL, " ,.-:"));
+	ltm->tm_sec = std::stoi(strtok(NULL, " ,.-:"));
+
+	time_t t = mktime(&converted_time);
+	return t;
+
+} 
+
+void TestCppClient::testCSV()
+{
+	std::vector<std::time_t> timestamps;
+	std::vector<double> open_price_vector;
+	std::vector<double> close_price_vector;
+	std::vector<double> high_price_vector;
+	std::vector<double> low_price_vector;
+	std::vector<int> volume_vector;
+
+	auto readCSV = [&timestamps, &open_price_vector, &close_price_vector, &high_price_vector, &low_price_vector, &volume_vector](std::ifstream& input_file)
+	{
+		if (!input_file.is_open()) {
+			std::cout << "ERROR: file open" << std::endl;
+		} else {
+			std::cout << "File successfully opened" << std::endl;
+			std::string str;
+			std::getline(input_file, str); // skips first line
+			while (std::getline(input_file,str)) {
+				//first column timestamp
+				std::getline(input_file, str, ',');
+				char char_array[20];
+				strcpy(char_array, str.c_str());
+				std::time_t t = convert_to_tm(char_array);
+				timestamps.push_back(t);
+				//second column
+				std::getline(input_file, str, ',');
+				open_price_vector.push_back(std::stod(str));
+				//third column
+				std::getline(input_file, str, ',');
+				high_price_vector.push_back(std::stod(str));
+				//fourth column
+				std::getline(input_file, str, ',');
+				low_price_vector.push_back(std::stod(str));
+				//fifth column
+				std::getline(input_file, str, ',');
+				close_price_vector.push_back(std::stod(str));
+				//sixth column
+				std::getline(input_file, str, '\n');
+				volume_vector.push_back(std::stod(str));
+			}
+		}
+	};
+
+
+	std::string filename;
+	std::cout << "Enter a file address" << std::endl;
+	std::cin >> filename;
+	std::ifstream ip(filename);
+	readCSV(ip);
+	const int low_x = timestamps[0];
+	const int high_x = timestamps[timestamps.size() - 1];
+	
+
+
+}
+
+
 
 //! [error]
 void TestCppClient::error(int id, int errorCode, const std::string& errorString)

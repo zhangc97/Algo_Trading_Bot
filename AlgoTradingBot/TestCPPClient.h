@@ -19,6 +19,7 @@ enum State {
 	ST_PING_ACK,
 	ST_HISTORICALDATAREQUEST,
 	ST_HISTORICALDATAREQUESTS_ACK,
+	ST_INITIALTEST
 };
 //! [ewrapperimpl]
 class TestCppClient : public EWrapper
@@ -51,6 +52,7 @@ private:
 	void printContractDetailsMsg(const ContractDetails& contractDetails);
 	void printContractDetailsSecIdList(const TagValueListSPtr &secIdList);
 	void printBondContractDetailsMsg(const ContractDetails& contractDetails);
+	void testCSV();
 
 private:
 	//! [socket_declare]

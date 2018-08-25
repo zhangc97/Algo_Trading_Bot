@@ -123,13 +123,14 @@
       <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
-      <AdditionalIncludeDirectories>..\source\cppclient;..\source\cppclient\client;%(AdditionalIncludeDirectories);..\</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\AlgoTradingBot\gnuplot-iostream;C:\Program Files (x86)\Microsoft Visual Studio\Shared\Anaconda3_64\include;C:\boost_1_66_0\boost_1_66_0;..\source\cppclient;..\source\cppclient\client;%(AdditionalIncludeDirectories);..\</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalLibraryDirectories>C:\boost_1_66_0\boost_1_66_0\stage\lib</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -153,9 +154,11 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="ContractSamples.h" />
+    <ClInclude Include="matplotlib-cpp.h" />
     <ClInclude Include="TestCPPClient.h" />
     <ClInclude Include="StdAfx.h" />
     <ClInclude Include="pch.h" />
+    <ClInclude Include="Time_Structure.h" />
     <ClInclude Include="Utils.h" />
   </ItemGroup>
   <ItemGroup>

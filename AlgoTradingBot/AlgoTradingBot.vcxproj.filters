@@ -14,5 +14,7 @@
     <ClInclude Include="TestCPPClient.h" />
     <ClInclude Include="Utils.h" />
     <ClInclude Include="ContractSamples.h" />
+    <ClInclude Include="Time_Structure.h" />
+    <ClInclude Include="matplotlib-cpp.h" />
   </ItemGroup>
 </Project>
