@@ -10,6 +10,14 @@
 #include <memory>
 #include <vector>
 
+struct file_row {
+	time_t timestamp;
+	double open_price;
+	double close_price;
+	double high_price;
+	double low_price;
+	int volume;
+};
 class EClientSocket;
 
 enum State {
@@ -25,6 +33,7 @@ enum State {
 class TestCppClient : public EWrapper
 {
 //! [ewrapperimpl]
+	
 public:
 	TestCppClient();
 	~TestCppClient();
@@ -37,6 +46,7 @@ public:
 	bool connect(const char* host, unsigned int port, int clientId = 0);
 	void disconnect() const;
 	bool isConnected() const;
+	void outputCSV(std::vector<file_row>* pre_processed_file, std::string file_name);
 
 private:
 	//Functions go here
@@ -53,6 +63,14 @@ private:
 	void printContractDetailsSecIdList(const TagValueListSPtr &secIdList);
 	void printBondContractDetailsMsg(const ContractDetails& contractDetails);
 	void testCSV();
+private:
+	//variables
+	double support;
+	double ATH;
+	double trending_mean;
+	double previous_tick_price;
+	int trading_volume;
+	
 
 private:
 	//! [socket_declare]

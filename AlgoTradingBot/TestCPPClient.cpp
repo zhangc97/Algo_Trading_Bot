@@ -24,7 +24,6 @@
 #include "CommonDefs.h"
 #include "Utils.h"
 #include "ContractSamples.h"
-#include "gnuplot-iostream.h"
 
 #include <stdio.h>
 #include <chrono>
@@ -34,7 +33,6 @@
 #include <fstream>
 #include <cstdint>
 #include <vector>
-
 
 const int PING_DEADLINE = 2; //seconds
 const int SLEEP_BETWEEN_PINGS = 30; // seconds
@@ -198,57 +196,93 @@ time_t convert_to_tm(char date_array[])
 	ltm->tm_year = std::stoi(pch) - 1900; //year value
 	ltm->tm_mon = std::stoi(strtok(NULL, " ,.-:")) - 1; //month	
 	ltm->tm_mday = std::stoi(strtok(NULL, " ,.-:"));
-	ltm->tm_hour = std::stoi(strtok(NULL, " ,.-:"));
-	ltm->tm_min = std::stoi(strtok(NULL, " ,.-:"));
-	ltm->tm_sec = std::stoi(strtok(NULL, " ,.-:"));
-
+	if(std::stoi(strtok(NULL, " ,.-:")))
+		//ltm->tm_hour = std::stoi(strtok(NULL, " ,.-:"));
+		//ltm->tm_min = std::stoi(strtok(NULL, " ,.-:"));
+		//ltm->tm_sec = std::stoi(strtok(NULL, " ,.-:"));
+	ltm->tm_hour = 0;
+	ltm->tm_min = 0;
+	ltm->tm_sec = 0;
+	std::cout << ltm->tm_year << "   " << ltm->tm_mon << "   "<<ltm->tm_mday<< std::endl;
 	time_t t = mktime(&converted_time);
+	std::cout << "Time_T: " << t << std::endl;
 	return t;
 
 } 
 
+void TestCppClient::outputCSV(std::vector<file_row>* pre_processed_file, std::string file_name)
+{
+	std::vector<file_row> &processing = *pre_processed_file;
+	std::ofstream outputFile("./Data/"+file_name+".csv");
+	outputFile << "Timestamp,Open_Price,Close_Price,High_Price,Low_Price,Volume\n";
+	for (int i = processing.size()-1; i >= 0; i--)
+	{
+		outputFile << processing[i].timestamp << ",";
+		outputFile << processing[i].open_price << ",";
+		outputFile << processing[i].close_price << ",";
+		outputFile << processing[i].high_price << ",";
+		outputFile << processing[i].low_price << ",";
+		outputFile << processing[i].volume << "\n";
+	}
+	outputFile.close();
+
+
+}
+
 void TestCppClient::testCSV()
 {
-	std::vector<std::time_t> timestamps;
-	std::vector<double> open_price_vector;
-	std::vector<double> close_price_vector;
-	std::vector<double> high_price_vector;
-	std::vector<double> low_price_vector;
-	std::vector<int> volume_vector;
+	
 
-	auto readCSV = [&timestamps, &open_price_vector, &close_price_vector, &high_price_vector, &low_price_vector, &volume_vector](std::ifstream& input_file)
+	std::vector<file_row> processed_csv;
+	std::time_t timestamp;
+	double open_price;
+	double close_price;
+	double high_price;
+	double low_price;
+	int volume;
+	std::string output_file_name;
+	
+
+	auto readCSV = [&](std::ifstream& input_file)
 	{
 		if (!input_file.is_open()) {
 			std::cout << "ERROR: file open" << std::endl;
 		} else {
 			std::cout << "File successfully opened" << std::endl;
 			std::string str;
-			std::getline(input_file, str); // skips first line
-			while (std::getline(input_file,str)) {
+			std::getline(input_file, str); // skips first line./
+			while (true) {
 				//first column timestamp
 				std::getline(input_file, str, ',');
+				if (input_file.eof())
+					break;
+				
 				char char_array[20];
 				strcpy(char_array, str.c_str());
 				std::time_t t = convert_to_tm(char_array);
-				timestamps.push_back(t);
+				timestamp = t;
 				//second column
 				std::getline(input_file, str, ',');
-				open_price_vector.push_back(std::stod(str));
+				open_price = (std::stod(str));
 				//third column
 				std::getline(input_file, str, ',');
-				high_price_vector.push_back(std::stod(str));
+				high_price=(std::stod(str));
 				//fourth column
 				std::getline(input_file, str, ',');
-				low_price_vector.push_back(std::stod(str));
+				low_price=(std::stod(str));
 				//fifth column
 				std::getline(input_file, str, ',');
-				close_price_vector.push_back(std::stod(str));
+				close_price=(std::stod(str));
 				//sixth column
 				std::getline(input_file, str, '\n');
-				volume_vector.push_back(std::stod(str));
-			}
-		}
+				volume=(std::stod(str));
+				file_row row = { timestamp, open_price, close_price, high_price, low_price, volume };
+				processed_csv.push_back(row);
+				
+			};
+		};
 	};
+
 
 
 	std::string filename;
@@ -256,12 +290,13 @@ void TestCppClient::testCSV()
 	std::cin >> filename;
 	std::ifstream ip(filename);
 	readCSV(ip);
-	const int low_x = timestamps[0];
-	const int high_x = timestamps[timestamps.size() - 1];
+	std::cout << "Enter a file name" << std::endl;
+	std::cin >> output_file_name;
+	outputCSV(&processed_csv, output_file_name);
 	
 
 
-}
+};
 
 
 
